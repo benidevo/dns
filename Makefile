@@ -1,3 +1,6 @@
+run:
+	sh run.sh
+
 test:
 	codecrafters test
 
