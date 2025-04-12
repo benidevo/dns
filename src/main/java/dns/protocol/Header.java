@@ -75,6 +75,8 @@ record Header(
         int authorityRecordCount,
         int additionalRecordCount) {
 
+    private final static int HEADER_SIZE = 12;
+
     /**
      * Creates a response header for a DNS protocol message.
      *
@@ -88,25 +90,31 @@ record Header(
     }
 
     /**
-     * Serializes the DNS header into a byte array according to the DNS protocol
-     * format.
-     * The header is 12 bytes long and includes fields such as ID, flags, and record
-     * counts.
+     * Returns the size of the header.
      *
-     * @return A byte array representing the serialized DNS header.
-     *
-     *         The serialized format includes:
-     *         - 2 bytes: Transaction ID (ID)
-     *         - 2 bytes: Flags (QR, Opcode, AA, TC, RD, RA, Z, RCODE)
-     *         - 2 bytes: Number of questions (QDCOUNT)
-     *         - 2 bytes: Number of answer records (ANCOUNT)
-     *         - 2 bytes: Number of authority records (NSCOUNT)
-     *         - 2 bytes: Number of additional records (ARCOUNT)
+     * @return the size of the header in bytes.
      */
-    byte[] serialize() {
+    int size() {
+        return HEADER_SIZE;
+    }
 
-        ByteBuffer buffer = ByteBuffer.allocate(12);
-
+    /**
+     * Serializes the DNS header into the provided ByteBuffer.
+     *
+     * <p>
+     * This method writes the DNS header fields into the given ByteBuffer in the
+     * correct order and format as per the DNS protocol specification. The fields
+     * include the ID, flags, question count, answer record count, authority record
+     * count, and additional record count.
+     * </p>
+     *
+     * @param buffer the ByteBuffer into which the DNS header will be serialized.
+     *               It must have sufficient space to accommodate the serialized
+     *               data.
+     * @throws BufferOverflowException if the buffer does not have enough space to
+     *                                 hold the serialized data.
+     */
+    void serializeInto(ByteBuffer buffer) {
         buffer.putShort((short) id);
 
         int flags = 0;
@@ -134,7 +142,5 @@ record Header(
         buffer.putShort((short) answerRecordCount);
         buffer.putShort((short) authorityRecordCount);
         buffer.putShort((short) additionalRecordCount);
-
-        return buffer.array();
     }
 }

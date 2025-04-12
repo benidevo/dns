@@ -1,5 +1,7 @@
 package dns.protocol;
 
+import java.nio.ByteBuffer;
+
 /**
  * Represents a DNS message consisting of a header and a question.
  * <p>
@@ -14,21 +16,22 @@ package dns.protocol;
  */
 public record Message(Header header, Question question) {
     /**
-     * Serializes the current message into a byte array by combining the serialized
-     * representations of the header and the question sections.
+     * Serializes the DNS message into a byte array.
+     * <p>
+     * This method combines the serialized representations of the header and
+     * question
+     * sections of the DNS message into a single byte array. The size of the buffer
+     * is determined by the combined sizes of the header and question sections.
+     * </p>
      *
-     * @return A byte array containing the serialized data of the message, which
-     *         includes the header followed by the question section.
+     * @return A byte array containing the serialized DNS message.
      */
     public byte[] serialize() {
-        byte[] headerBytes = header.serialize();
-        byte[] questionBytes = question.serialize();
+        ByteBuffer buffer = ByteBuffer.allocate(header.size() + question.size());
+        header.serializeInto(buffer);
+        question.serializeInto(buffer);
 
-        byte[] result = new byte[headerBytes.length + questionBytes.length];
-        System.arraycopy(headerBytes, 0, result, 0, headerBytes.length);
-        System.arraycopy(questionBytes, 0, result, headerBytes.length, questionBytes.length);
-
-        return result;
+        return buffer.array();
     }
 
     /**

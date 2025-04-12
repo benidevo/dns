@@ -45,6 +45,9 @@ public class ServerImpl implements Server {
 
     @Override
     public void stop() {
+        if (socket != null && !socket.isClosed()) {
+            socket.close();
+        }
     }
 
     @Override
