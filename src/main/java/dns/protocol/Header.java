@@ -83,9 +83,8 @@ record Header(
      *         other default settings for a DNS response.
      */
     static Header createResponseHeader() {
-
         return new Header(
-                1234, true, (short) 0, false, false, false, false, (byte) 0, (byte) 0, 0, 0, 0, 0);
+                1234, true, (short) 0, false, false, false, false, (byte) 0, (byte) 0, 1, 0, 0, 0);
     }
 
     /**
