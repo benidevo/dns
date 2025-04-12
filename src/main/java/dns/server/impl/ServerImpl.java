@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 import dns.utils.Constants;
+import dns.protocol.Message;
 import dns.server.Server;
 
 public class ServerImpl implements Server {
@@ -19,7 +20,6 @@ public class ServerImpl implements Server {
             this.socket = new DatagramSocket(port);
         } catch (IOException e) {
             throw new RuntimeException("Failed to create socket on port " + port, e);
-
         }
     }
 
@@ -32,7 +32,8 @@ public class ServerImpl implements Server {
                 socket.receive(packet);
                 System.out.println("Received data");
 
-                final byte[] bufResponse = new byte[Constants.MAX_PACKET_SIZE];
+                Message response = Message.createResponseMessage();
+                final byte[] bufResponse = response.serialize();
                 final DatagramPacket packetResponse = new DatagramPacket(bufResponse, bufResponse.length,
                         packet.getSocketAddress());
                 socket.send(packetResponse);
@@ -40,7 +41,6 @@ public class ServerImpl implements Server {
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
         }
-
     }
 
     @Override
