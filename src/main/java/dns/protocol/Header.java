@@ -60,7 +60,6 @@ import java.nio.ByteBuffer;
  *                              of the message.
  */
 record Header(
-
         int id,
         boolean isResponse,
         short opCode,
@@ -86,7 +85,7 @@ record Header(
      */
     static Header createResponseHeader() {
         return new Header(
-                1234, true, (short) 0, false, false, false, false, (byte) 0, (byte) 0, 1, 0, 0, 0);
+                1234, true, (short) 0, false, false, false, false, (byte) 0, (byte) 0, 1, 1, 0, 0);
     }
 
     /**

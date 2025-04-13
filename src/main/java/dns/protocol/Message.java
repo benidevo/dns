@@ -3,50 +3,61 @@ package dns.protocol;
 import java.nio.ByteBuffer;
 
 /**
- * Represents a DNS message consisting of a header and a question.
+ * Represents a DNS message consisting of a header, a question, and an answer
+ * section.
  * <p>
- * This record encapsulates the structure of a DNS message, which includes
- * a {@link Header} and a {@link Question}. It provides methods for serializing
- * the message into a byte array and creating a response message.
+ * This record encapsulates the components of a DNS message, including:
+ * </p>
+ * <ul>
+ * <li>{@link Header} - The header section containing metadata about the DNS
+ * message.</li>
+ * <li>{@link Question} - The question section specifying the query
+ * details.</li>
+ * <li>{@link ResourceRecord} - The answer section containing the response
+ * data.</li>
+ * </ul>
+ * <p>
+ * The {@code Message} record provides methods to serialize the DNS message into
+ * a byte array
+ * and to create a response message for a DNS query.
  * </p>
  *
- * @param header   the header of the DNS message, containing metadata and flags
- * @param question the question section of the DNS message, representing the
- *                 query
+ * @param header   The header section of the DNS message.
+ * @param question The question section of the DNS message.
+ * @param answer   The answer section of the DNS message.
  */
-public record Message(Header header, Question question) {
+public record Message(Header header, Question question, ResourceRecord answer) {
     /**
-     * Serializes the DNS message into a byte array.
-     * <p>
-     * This method combines the serialized representations of the header and
-     * question
-     * sections of the DNS message into a single byte array. The size of the buffer
-     * is determined by the combined sizes of the header and question sections.
-     * </p>
+     * Serializes the DNS message into a byte array. The method combines the
+     * serialized
+     * representations of the header, question, and answer sections of the DNS
+     * message.
      *
      * @return A byte array containing the serialized DNS message.
      */
     public byte[] serialize() {
-        ByteBuffer buffer = ByteBuffer.allocate(header.size() + question.size());
+        ByteBuffer buffer = ByteBuffer.allocate(header.size() + question.size() + answer.size());
         header.serializeInto(buffer);
         question.serializeInto(buffer);
+        answer.serializeInto(buffer);
 
         return buffer.array();
     }
 
     /**
-     * Creates a new response message for a DNS protocol.
+     * Creates a new response message for a DNS query.
      * <p>
-     * This method generates a response message by creating a response header
-     * and a corresponding question section. The resulting message is constructed
-     * using these components.
+     * This method constructs a DNS response message by creating a response header,
+     * a question section, and an answer section. The response message is then
+     * assembled using these components.
      * </p>
      *
-     * @return a {@link Message} instance representing the DNS response message.
+     * @return a {@link Message} object representing the DNS response message.
      */
     public static Message createResponseMessage() {
         Header headerResponse = Header.createResponseHeader();
         Question question = Question.valueOf();
-        return new Message(headerResponse, question);
+        ResourceRecord answer = ResourceRecord.valueOf();
+        return new Message(headerResponse, question, answer);
     }
 }
