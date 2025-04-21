@@ -39,11 +39,6 @@ public class LoggingConfig {
      * and adding a new {@link ConsoleHandler} with the logging level set to
      * {@link Level#INFO}.
      * It also sets the root logger's logging level to {@link Level#INFO}.
-     * </p>
-     * <p>
-     * This ensures that log messages are output to the console with the specified
-     * logging level.
-     * </p>
      */
     public static void initialize() {
         Logger rootLogger = Logger.getLogger("");
@@ -68,5 +63,4 @@ public class LoggingConfig {
     public static Logger getLogger(Class<?> clazz) {
         return Logger.getLogger(clazz.getName());
     }
-
 }

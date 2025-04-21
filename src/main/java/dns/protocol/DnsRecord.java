@@ -24,7 +24,6 @@ enum DnsRecord {
      */
     CNAME(5),
 
-
     /**
      * Text record that holds arbitrary text data associated with a domain.
      * Value: 16
@@ -66,11 +65,13 @@ enum DnsRecord {
     }
 
     /**
-     * Converts an integer value to its corresponding {@code DnsRecord} enum constant.
+     * Converts an integer value to its corresponding {@code DnsRecord} enum
+     * constant.
      *
      * @param value the integer value representing a DNS record type.
      * @return the {@code DnsRecord} enum constant corresponding to the given value.
-     * @throws IllegalArgumentException if the value does not correspond to any known DNS record type.
+     * @throws IllegalArgumentException if the value does not correspond to any
+     *                                  known DNS record type.
      */
     static DnsRecord fromValue(int value) {
         for (DnsRecord record : values()) {
@@ -80,4 +81,5 @@ enum DnsRecord {
         }
         throw new IllegalArgumentException("Unknown DNS record type: " + value);
     }
+
 }

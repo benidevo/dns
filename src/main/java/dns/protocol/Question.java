@@ -33,7 +33,6 @@ record Question(String domainName, DnsRecord recordType, int questionClass) {
      * @return The total size of the DNS question in bytes.
      */
     int size() {
-
         int size = 0;
 
         String[] labels = domainName.split("\\.");
@@ -42,8 +41,8 @@ record Question(String domainName, DnsRecord recordType, int questionClass) {
             size += label.getBytes().length;
         }
 
-        size += 1; // 1 byte for the terminating zero
-        size += 4; // 2 bytes for the record type and 2 bytes for record class
+        size += 1;
+        size += 4;
 
         return size;
     }
@@ -57,13 +56,8 @@ record Question(String domainName, DnsRecord recordType, int questionClass) {
      * and question class in their respective binary formats.
      *
      * @param buffer the ByteBuffer into which the DNS question will be serialized.
-     *               The buffer must have sufficient space to accommodate the
-     *               serialized data.
-     * @throws BufferOverflowException if the buffer does not have enough space to
-     *                                 hold the serialized data.
      */
     void serializeInto(ByteBuffer buffer) {
-
         String[] labels = domainName.split("\\.");
         for (String label : labels) {
             buffer.put((byte) label.length());
@@ -73,5 +67,33 @@ record Question(String domainName, DnsRecord recordType, int questionClass) {
 
         buffer.putShort((short) recordType.getValue());
         buffer.putShort((short) questionClass);
+    }
+
+    /**
+     * Deserializes a DNS Question section from a byte buffer.
+     *
+     * @param buffer ByteBuffer containing the DNS message data positioned at the
+     *               start of a Question section
+     * @return A new Question object constructed from the data in the buffer
+     */
+    static Question deserializeFrom(ByteBuffer buffer) {
+        StringBuilder domainName = new StringBuilder();
+        byte labelLength;
+
+        while ((labelLength = buffer.get()) > 0) {
+            byte[] labelBytes = new byte[labelLength];
+            buffer.get(labelBytes);
+            String label = String.valueOf(labelBytes);
+
+            if (domainName.length() > 0) {
+                domainName.append(".");
+            }
+            domainName.append(label);
+        }
+
+        DnsRecord recordType = DnsRecord.fromValue(buffer.getShort());
+        short questionClass = buffer.getShort();
+
+        return new Question(domainName.toString(), recordType, questionClass);
     }
 }

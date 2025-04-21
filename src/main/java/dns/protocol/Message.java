@@ -3,28 +3,14 @@ package dns.protocol;
 import java.nio.ByteBuffer;
 
 /**
- * Represents a DNS message consisting of a header, a question, and an answer
- * section.
+ * Represents a DNS message consisting of a header, question, and answer record.
  * <p>
- * This record encapsulates the components of a DNS message, including:
+ * A DNS message is the fundamental unit of communication in the DNS protocol,
+ * containing sections for the header, which provides metadata about the
+ * message,
+ * a question section that contains the query information, and an answer section
+ * that contains resource records responding to a query.
  * </p>
- * <ul>
- * <li>{@link Header} - The header section containing metadata about the DNS
- * message.</li>
- * <li>{@link Question} - The question section specifying the query
- * details.</li>
- * <li>{@link ResourceRecord} - The answer section containing the response
- * data.</li>
- * </ul>
- * <p>
- * The {@code Message} record provides methods to serialize the DNS message into
- * a byte array
- * and to create a response message for a DNS query.
- * </p>
- *
- * @param header   The header section of the DNS message.
- * @param question The question section of the DNS message.
- * @param answer   The answer section of the DNS message.
  */
 public record Message(Header header, Question question, ResourceRecord answer) {
     /**
@@ -45,6 +31,19 @@ public record Message(Header header, Question question, ResourceRecord answer) {
     }
 
     /**
+     * Deserializes a DNS message from a byte array.
+     *
+     * @param requestBuffer The byte array containing the serialized DNS message.
+     * @return A new Message object deserialized from the given byte array.
+     */
+    public static Message deserialize(byte[] requestBuffer) {
+        ByteBuffer buffer = ByteBuffer.wrap(requestBuffer);
+        Header header = Header.deserializeFrom(buffer);
+
+        return new Message(header, Question.valueOf(), ResourceRecord.valueOf());
+    }
+
+    /**
      * Creates a new response message for a DNS query.
      * <p>
      * This method constructs a DNS response message by creating a response header,
@@ -54,8 +53,9 @@ public record Message(Header header, Question question, ResourceRecord answer) {
      *
      * @return a {@link Message} object representing the DNS response message.
      */
-    public static Message createResponseMessage() {
-        Header headerResponse = Header.createResponseHeader();
+    public static Message toDnsResponse(Message requestMessage) {
+        Header headerResponse = Header.toResponseHeader(requestMessage.header().id(), requestMessage.header().opCode(),
+                requestMessage.header().recursionDesired());
         Question question = Question.valueOf();
         ResourceRecord answer = ResourceRecord.valueOf();
         return new Message(headerResponse, question, answer);

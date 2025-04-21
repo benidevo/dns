@@ -34,20 +34,39 @@ public class ServerImpl implements Server {
 
         try {
             while (true) {
-                final byte[] buf = new byte[Constants.MAX_PACKET_SIZE];
-                final DatagramPacket packet = new DatagramPacket(buf, buf.length);
+                final byte[] requestBuffer = new byte[Constants.MAX_PACKET_SIZE];
+                final DatagramPacket packet = new DatagramPacket(requestBuffer, requestBuffer.length);
                 socket.receive(packet);
+
                 logger.info("Received data from " + packet.getSocketAddress());
 
-                Message response = Message.createResponseMessage();
-                final byte[] bufResponse = response.serialize();
-                final DatagramPacket packetResponse = new DatagramPacket(bufResponse, bufResponse.length,
+                byte[] responseBuffer = handleRequest(requestBuffer);
+                final DatagramPacket packetResponse = new DatagramPacket(
+                        responseBuffer,
+                        responseBuffer.length,
                         packet.getSocketAddress());
+
                 socket.send(packetResponse);
+
+                logger.info("Sent response to " + packet.getSocketAddress());
             }
         } catch (IOException e) {
             logger.severe("IOException: " + e.getMessage());
         }
+    }
+
+    /**
+     * Processes a DNS request and generates a corresponding response.
+     *
+     * @param requestBuffer The raw DNS request as a byte array
+     * @return The serialized DNS response as a byte array
+     */
+    private byte[] handleRequest(byte[] requestBuffer) {
+        logger.info("Handling request...");
+        Message request = Message.deserialize(requestBuffer);
+        Message response = Message.toDnsResponse(request);
+
+        return response.serialize();
     }
 
     @Override
@@ -61,5 +80,4 @@ public class ServerImpl implements Server {
     @Override
     public void restart() {
     }
-
 }

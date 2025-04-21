@@ -2,62 +2,31 @@ package dns.protocol;
 
 import java.nio.ByteBuffer;
 
+import dns.utils.Constants;
+
 /**
- * Represents the header section of a DNS message.
+ * Represents a DNS header as defined in RFC 1035.
  *
  * <p>
- * The header contains metadata about the DNS message, such as whether it is
- * a query or a response, the operation code, and counts of various record
- * types.
- * This class is implemented as a Java record, which provides an immutable data
- * structure with built-in methods for equality, hash code, and string
- * representation.
+ * A DNS header contains information about the query or response including
+ * identification, flags, and counts of different sections in the DNS message.
  * </p>
  *
- * @param id                    A 16-bit identifier assigned by the program that
- *                              generates
- *                              any kind of query. This identifier is copied
- *                              into the
- *                              corresponding reply and can be used by the
- *                              requester to
- *                              match responses to outstanding queries.
- * @param isResponse            Indicates whether this message is a response
- *                              (true) or a
- *                              query (false).
- * @param opCode                A 4-bit field that specifies the kind of query
- *                              in this
- *                              message. For standard queries, this is 0.
- * @param isAuthoritativeAnswer Indicates whether the responding name server is
- *                              an
- *                              authoritative server for the domain name in
- *                              question.
- * @param isTruncated           Indicates whether this message was truncated due
- *                              to
- *                              exceeding the maximum allowable size.
- * @param recursionDesired      Indicates whether the client desires recursive
- *                              query
- *                              support.
- * @param recursionAvailable    Indicates whether the server supports recursive
- *                              queries.
- * @param reserved              A 3-bit reserved field, currently unused and
- *                              must be set
- *                              to 0 in queries and responses.
- * @param responseCode          A 4-bit field that indicates the status of the
- *                              response.
- *                              Common values include 0 (No error) and 3 (Name
- *                              error).
- * @param questionCount         The number of entries in the question section of
- *                              the
- *                              message.
- * @param answerRecordCount     The number of resource records in the answer
- *                              section of
- *                              the message.
- * @param authorityRecordCount  The number of name server resource records in
- *                              the
- *                              authority section of the message.
- * @param additionalRecordCount The number of resource records in the additional
- *                              section
- *                              of the message.
+ * <p>
+ * The header is a 12-byte structure containing:
+ * <ul>
+ * <li>ID: A 16-bit identifier for the query/response</li>
+ * <li>Various flag bits (QR, OPCODE, AA, TC, RD, RA, Z, RCODE)</li>
+ * <li>Count fields for questions and resource records</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * This implementation provides methods to create response headers,
+ * serialize headers to byte buffers, and deserialize headers from byte buffers.
+ * </p>
+ *
+ * @see <a href="https://tools.ietf.org/html/rfc1035">RFC 1035</a>
  */
 record Header(
         int id,
@@ -77,15 +46,18 @@ record Header(
     private final static int HEADER_SIZE = 12;
 
     /**
-     * Creates a response header for a DNS protocol message.
+     * Creates a DNS response header with specified parameters.
      *
-     * @return a {@link Header} object initialized with default values for a DNS
-     *         response. The header includes a transaction ID, response flag, and
-     *         other default settings for a DNS response.
+     * @param id               The ID of the corresponding request
+     * @param opCode           The operation code from the request
+     * @param recursionDesired Whether recursion is desired, copied from the request
+     * @return A Header object configured as a response
      */
-    static Header createResponseHeader() {
+    static Header toResponseHeader(int id, int opCode, boolean recursionDesired) {
+        int responseCode = opCode == 0 ? 0 : 4;
         return new Header(
-                1234, true, (short) 0, false, false, false, false, (byte) 0, (byte) 0, 1, 1, 0, 0);
+                id, true, (short) opCode, false, false, recursionDesired, false, (byte) 0, (byte) responseCode, 1, 1, 0,
+                0);
     }
 
     /**
@@ -98,20 +70,10 @@ record Header(
     }
 
     /**
-     * Serializes the DNS header into the provided ByteBuffer.
+     * Serializes the DNS header into the provided ByteBuffer according to RFC 1035.
+     * Includes ID, flags, and section counts in the standard DNS header format.
      *
-     * <p>
-     * This method writes the DNS header fields into the given ByteBuffer in the
-     * correct order and format as per the DNS protocol specification. The fields
-     * include the ID, flags, question count, answer record count, authority record
-     * count, and additional record count.
-     * </p>
-     *
-     * @param buffer the ByteBuffer into which the DNS header will be serialized.
-     *               It must have sufficient space to accommodate the serialized
-     *               data.
-     * @throws BufferOverflowException if the buffer does not have enough space to
-     *                                 hold the serialized data.
+     * @param buffer The ByteBuffer to write the header data into
      */
     void serializeInto(ByteBuffer buffer) {
         buffer.putShort((short) id);
@@ -120,7 +82,7 @@ record Header(
         if (isResponse) {
             flags |= (1 << 15);
         }
-        flags |= (opCode) & 0xF << 11;
+        flags |= ((opCode & Constants.NIBBLE_MASK) << 11);
         if (isAuthoritativeAnswer) {
             flags |= (1 << 10);
         }
@@ -133,13 +95,61 @@ record Header(
         if (recursionAvailable) {
             flags |= (1 << 7);
         }
-        flags |= ((reserved & 0x7) << 4);
-        flags |= (responseCode() & 0xF);
+        flags |= ((reserved & Constants.BYTE_HIGH_BITS_MASK) << 4);
+        flags |= (responseCode() & Constants.NIBBLE_MASK);
         buffer.putShort((short) flags);
 
         buffer.putShort((short) questionCount);
         buffer.putShort((short) answerRecordCount);
         buffer.putShort((short) authorityRecordCount);
         buffer.putShort((short) additionalRecordCount);
+    }
+
+    /**
+     * Deserializes a DNS header from a byte buffer.
+     *
+     * <p>
+     * This method reads the DNS header fields from the given ByteBuffer according
+     * to
+     * the standard DNS protocol format (RFC 1035). The header is 12 bytes long and
+     * contains
+     * information about the query or response.
+     * </p>
+     *
+     * @param buffer The ByteBuffer containing the DNS header data to deserialize
+     * @return A new Header object with the deserialized values
+     */
+    static Header deserializeFrom(ByteBuffer buffer) {
+        short id = buffer.getShort();
+
+        int flags = buffer.getShort() & Constants.MAX_UNSIGNED_SHORT;
+        boolean isResponse = (flags & (1 << 15)) != 0;
+        short opCode = (short) ((flags >> 11) & Constants.NIBBLE_MASK);
+        boolean isAuthoritativeAnswer = (flags & (1 << 10)) != 0;
+        boolean isTruncated = (flags & (1 << 9)) != 0;
+        boolean recursionDesired = (flags & (1 << 8)) != 0;
+        boolean recursionAvailable = (flags & (1 << 7)) != 0;
+        byte reserved = (byte) ((flags >> 4) & Constants.BYTE_HIGH_BITS_MASK);
+        byte responseCode = (byte) (flags & Constants.NIBBLE_MASK);
+
+        int questionCount = buffer.getShort() & Constants.MAX_UNSIGNED_SHORT;
+        int answerRecordCount = buffer.getShort() & Constants.MAX_UNSIGNED_SHORT;
+        int authorityRecordCount = buffer.getShort() & Constants.MAX_UNSIGNED_SHORT;
+        int additionalRecordCount = buffer.getShort() & Constants.MAX_UNSIGNED_SHORT;
+
+        return new Header(
+                id,
+                isResponse,
+                opCode,
+                isAuthoritativeAnswer,
+                isTruncated,
+                recursionDesired,
+                recursionAvailable,
+                reserved,
+                responseCode,
+                questionCount,
+                answerRecordCount,
+                authorityRecordCount,
+                additionalRecordCount);
     }
 }
