@@ -1,0 +1,38 @@
+# Build artifacts
+target/
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.settings/
+.classpath
+.project
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CodeCrafters files
+.codecrafters/
+codecrafters.yml
+
+# Logs
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Other unnecessary files
+README.md
+Makefile
+run.sh

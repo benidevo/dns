@@ -1,111 +1,48 @@
 # DNS Server
 
-A DNS server implementation written in Java.
+A lightweight Java implementation of a DNS server for the [CodeCrafters DNS Server Challenge](https://codecrafters.io/challenges/dns-server).
 
 ## Overview
 
-This project implements a Domain Name System (DNS) server that handles DNS queries according to [RFC 1035 specifications](https://tools.ietf.org/html/rfc1035). Built with Java 23 and managed with Maven, the implementation follows a multi-layered architecture.
+This DNS server processes and responds to domain name lookup requests according to RFC 1035 specifications. The server listens for UDP packets on port 2053, parses DNS query messages, and generates appropriate responses with IP address information.
 
-## Architecture
+## Features
 
-```
-┌───────────────────┐
-│    DNS Client     │
-└─────────┬─────────┘
-          │ UDP
-          ▼
-┌───────────────────┐      ┌───────────────────┐
-│  Server Layer     │      │   Protocol Layer  │
-│  (UDP handling)   │◄────►│   (DNS Messages)  │
-└─────────┬─────────┘      └─────────┬─────────┘
-          │                          │
-          ▼                          ▼
-┌───────────────────┐      ┌───────────────────┐
-│  Service Layer    │      │  Domain Objects   │
-│ (DNS Resolution)  │◄────►│ (Records, Queries)│
-└─────────┬─────────┘      └───────────────────┘
-          │
-          ▼
-┌───────────────────┐
-│ Repository Layer  │
-│ (Domain Storage)  │
-└─────────┬─────────┘
-          │
-          ▼
-┌───────────────────┐
-│   Store Layer     │
-│ (Implementation)  │
-└───────────────────┘
-```
+✅ UDP socket communication on port 2053
+✅ Binary DNS protocol message parsing
+✅ Query extraction and validation
+✅ Response message generation
+✅ IPv4 (A record) support
 
-### Key Components
+## Technical Approach
 
-1. **Server Layer**
-   - Handles UDP socket communication
-   - Receives binary DNS query packets
-   - Sends binary DNS response packets
-   - Delegates processing to the Service layer
+The implementation uses Java 23's features including records for immutable protocol structures and ByteBuffer for efficient binary manipulation. The DNS message format is carefully implemented according to RFC specifications, with proper header flag handling and domain name encoding/decoding.
 
-2. **Protocol Layer**
-   - Defines DNS message structure (headers, queries, records)
-   - Handles serialization/deserialization between binary and domain objects
-   - Maintains protocol compliance
+## Limitations
 
-3. **Service Layer**
-   - Contains the DNS resolution logic
-   - Processes queries against the repository
-   - Builds appropriate responses
+This is an educational implementation with intentional limitations:
 
-4. **Repository Layer**
-   - Abstracts the storage mechanism
-   - Provides interface for domain name resolution
+- Returns a fixed IP address (8.8.8.8) regardless of the domain queried
+- Single-threaded request processing model
+- No recursive resolution or forwarding capabilities
+- No caching mechanism implemented
+- Support limited to A records
 
-5. **Store Layer**
-   - Implements the repository interface
-   - Stores mappings between domain names and IP addresses
-
-## Current Implementation Status
-
-The server is currently in development with the following components implemented:
-
-- [x] Basic UDP socket server listening on port 2053
-- [x] DNS message and header structures with serialization
-- [x] Simple response generation infrastructure
-- [ ] Full DNS request parsing
-- [ ] Domain name storage
-- [ ] Multiple record type support (A, AAAA, MX, etc.)
-- [ ] Caching mechanism
-
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 
-- Java 23 or higher
-- Maven 3.6 or higher
+- Java 23
+- Maven 3.6+
 
-### Building the Project
-
-```bash
-# Clone the repository
-git clone https://github.com/benidevo/dns
-cd dns
-
-# Build the project
-mvn package
-```
-
-### Running the Server
+### Running
 
 ```bash
-# Using the provided run script
-./run.sh
-
-# Or manually
-java -jar target/codecrafters-dns-server.jar
+# Build and run
+make run
 ```
 
 ## References
 
-- [RFC 1035 - Domain Names - Implementation and Specification](https://tools.ietf.org/html/rfc1035)
-- [RFC 3596 - DNS Extensions to Support IP Version 6](https://tools.ietf.org/html/rfc3596)
-- [Java DatagramSocket API](https://docs.oracle.com/en/java/javase/23/docs/api/java.base/java/net/DatagramSocket.html)
+- [RFC 1035: Domain Names - Implementation and Specification](https://tools.ietf.org/html/rfc1035)
+- [CodeCrafters DNS Challenge](https://codecrafters.io/challenges/dns-server)

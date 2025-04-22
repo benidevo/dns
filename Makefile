@@ -1,20 +1,4 @@
 run:
-	sh run.sh
-
-test:
-	codecrafters test
-
-format:
-    mvn spotless:apply
-
-compile:
-	mvn clean compile
-
-package:
-	mvn package
-
-install:
-	mvn install
-
-compile:
-	mvn clean compile
+	docker compose -f docker/docker-compose.yaml up --build
+stop:
+	docker compose -f docker/docker-compose.yaml down

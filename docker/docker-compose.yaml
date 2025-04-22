@@ -1,0 +1,9 @@
+services:
+  dns-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "2053:2053/udp"
+    restart: unless-stopped
+    container_name: dns-server
