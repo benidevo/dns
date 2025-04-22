@@ -14,8 +14,16 @@ import java.nio.ByteBuffer;
  *                      (IN).
  */
 record Question(String domainName, DnsRecord recordType, int questionClass) {
-    static Question valueOf() {
-        return new Question("codecrafters.io", DnsRecord.A, 1);
+
+    /**
+     * Creates a response question for the specified domain name.
+     *
+     * @param domainName the domain name to create a response question for
+     * @return a new Question instance configured for A record type with internet
+     *         class
+     */
+    static Question toResponseQuestion(String domainName) {
+        return new Question(domainName, DnsRecord.A, 1);
     }
 
     /**
@@ -83,7 +91,7 @@ record Question(String domainName, DnsRecord recordType, int questionClass) {
         while ((labelLength = buffer.get()) > 0) {
             byte[] labelBytes = new byte[labelLength];
             buffer.get(labelBytes);
-            String label = String.valueOf(labelBytes);
+            String label = new String(labelBytes);
 
             if (domainName.length() > 0) {
                 domainName.append(".");

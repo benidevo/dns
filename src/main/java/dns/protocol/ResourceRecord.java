@@ -25,8 +25,15 @@ import dns.utils.Constants;
  *                    address for A records)
  */
 record ResourceRecord(String domainName, DnsRecord recordType, int recordClass, int ttl, int length, String data) {
-    static ResourceRecord valueOf() {
-        return new ResourceRecord("codecrafters.io", DnsRecord.A, 1, 60, 4, "8.8.8.8");
+    /**
+     * Creates a response resource record for a given domain name.
+     *
+     * @param domainName the domain name for the resource record
+     * @return a new ResourceRecord with type A, class 1, TTL 60, data length 4, and
+     *         IP address 8.8.8.8
+     */
+    static ResourceRecord toResponseResourceRecord(String domainName) {
+        return new ResourceRecord(domainName, DnsRecord.A, 1, 60, 4, "8.8.8.8");
     }
 
     /**
@@ -114,7 +121,7 @@ record ResourceRecord(String domainName, DnsRecord recordType, int recordClass, 
         while ((labelLength = buffer.get()) > 0) {
             byte[] labelBytes = new byte[labelLength];
             buffer.get(labelBytes);
-            String label = String.valueOf(labelBytes);
+            String label = new String(labelBytes);
 
             if (domainName.length() > 0) {
                 domainName.append(".");

@@ -39,25 +39,25 @@ public record Message(Header header, Question question, ResourceRecord answer) {
     public static Message deserialize(byte[] requestBuffer) {
         ByteBuffer buffer = ByteBuffer.wrap(requestBuffer);
         Header header = Header.deserializeFrom(buffer);
+        Question question = Question.deserializeFrom(buffer);
+        ResourceRecord answer = ResourceRecord.deserializeFrom(buffer);
 
-        return new Message(header, Question.valueOf(), ResourceRecord.valueOf());
+        return new Message(header, question, answer);
     }
 
     /**
      * Creates a new response message for a DNS query.
      * <p>
      * This method constructs a DNS response message by creating a response header,
-     * a question section, and an answer section. The response message is then
-     * assembled using these components.
-     * </p>
+     * a question section, and an answer section.
      *
      * @return a {@link Message} object representing the DNS response message.
      */
     public static Message toDnsResponse(Message requestMessage) {
         Header headerResponse = Header.toResponseHeader(requestMessage.header().id(), requestMessage.header().opCode(),
                 requestMessage.header().recursionDesired());
-        Question question = Question.valueOf();
-        ResourceRecord answer = ResourceRecord.valueOf();
+        Question question = Question.toResponseQuestion(requestMessage.question().domainName());
+        ResourceRecord answer = ResourceRecord.toResponseResourceRecord(requestMessage.question().domainName());
         return new Message(headerResponse, question, answer);
     }
 }

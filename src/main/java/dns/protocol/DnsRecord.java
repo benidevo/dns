@@ -7,6 +7,11 @@ package dns.protocol;
  */
 enum DnsRecord {
     /**
+     * Reserved record type.
+     * Value: 0
+     */
+    RESERVED(0),
+    /**
      * Address record that maps a hostname to an IPv4 address.
      * Value: 1
      */
