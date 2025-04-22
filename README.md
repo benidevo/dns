@@ -4,15 +4,15 @@ A lightweight Java implementation of a DNS server for the [CodeCrafters DNS Serv
 
 ## Overview
 
-This DNS server processes and responds to domain name lookup requests according to RFC 1035 specifications. The server listens for UDP packets on port 2053, parses DNS query messages, and generates appropriate responses with IP address information.
+This DNS server processes and responds to domain name lookup requests according to [RFC 1035](https://tools.ietf.org/html/rfc1035) specifications. The server listens for UDP packets on port 2053, parses DNS query messages, and generates appropriate responses with IP address information.
 
 ## Features
 
-✅ UDP socket communication on port 2053
-✅ Binary DNS protocol message parsing
-✅ Query extraction and validation
-✅ Response message generation
-✅ IPv4 (A record) support
+- ✅ UDP socket communication on port 2053
+- ✅ Binary DNS protocol message parsing
+- ✅ Query extraction and validation
+- ✅ Response message generation
+- ✅ IPv4 (A record) support
 
 ## Technical Approach
 
@@ -32,17 +32,45 @@ This is an educational implementation with intentional limitations:
 
 ### Prerequisites
 
-- Java 23
-- Maven 3.6+
+- Docker and Docker Compose
+- OR Java 23 and Maven 3.6+
 
-### Running
+### Running with Docker
+
+The easiest way to run the DNS server is using Docker Compose:
 
 ```bash
-# Build and run
+# Build and start the server
 make run
+
+# Stop the server
+make stop
 ```
 
-## References
+## Testing the DNS Server
 
-- [RFC 1035: Domain Names - Implementation and Specification](https://tools.ietf.org/html/rfc1035)
-- [CodeCrafters DNS Challenge](https://codecrafters.io/challenges/dns-server)
+You can test the DNS server using standard DNS tools like `nslookup`. The server listens on UDP port 2053 and currently responds with `8.8.8.8` for all A record queries.
+
+### Using nslookup
+
+On Linux/Mac:
+
+```bash
+nslookup -port=2053 example.com localhost
+```
+
+On Windows:
+
+```bash
+nslookup -port=2053 example.com 127.0.0.1
+```
+
+Expected output:
+
+```
+Server:    localhost
+Address:   127.0.0.1#2053
+
+Name:      example.com
+Address:   8.8.8.8
+```
